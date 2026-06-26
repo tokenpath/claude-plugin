@@ -1,0 +1,17 @@
+{
+  "name": "tokenpath",
+  "owner": { "name": "TokenPath", "url": "https://tokenpath.ai" },
+  "metadata": {
+    "description": "Fast token-level attribution for AI agents — every claim traced to its exact source span.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "tokenpath",
+      "source": ".",
+      "description": "Fast, token-level attribution for any LLM output — trace each generated claim to the exact source span behind it. Grounding checks, hallucination and prompt-injection detection, and provenance, via the TokenPath API.",
+      "category": "development",
+      "keywords": ["attribution", "grounding", "rag", "provenance"]
+    }
+  ]
+}

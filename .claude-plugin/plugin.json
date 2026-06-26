@@ -1,0 +1,27 @@
+{
+  "name": "tokenpath",
+  "version": "0.1.0",
+  "description": "Token-level attribution for LLM output: grounding checks, hallucination and prompt-injection detection, and source attribution, powered by the TokenPath API (api.tokenpath.ai).",
+  "author": {
+    "name": "TokenPath",
+    "url": "https://tokenpath.ai"
+  },
+  "homepage": "https://tokenpath.ai",
+  "license": "MIT",
+  "keywords": [
+    "attribution",
+    "grounding",
+    "hallucination",
+    "prompt-injection",
+    "rag",
+    "provenance"
+  ],
+  "mcpServers": {
+    "tokenpath": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp/dist/index.cjs"
+      ]
+    }
+  }
+}

@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TokenPath · attribution playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0d12; --panel: #0f141b; --panel-2: #131922;
+    --grid: rgba(120,165,205,.07);
+    --text: #d8e1ec; --muted: #8a99ac; --faint: #586677;
+    --border: rgba(140,175,210,.14); --border-strong: rgba(150,185,220,.26);
+    --accent: #5cb8d8; --accent-ink: #06222c;
+    --heat-from: #3f9fd4; --heat-to: #f1a64a;
+    --ok: #5bc08c; --ok-bg: rgba(91,192,140,.16);
+    --mid: #e6ad5a; --mid-bg: rgba(230,173,90,.16);
+    --no: #e36b62; --no-bg: rgba(227,107,98,.15);
+    --shadow: 0 18px 50px -24px rgba(0,0,0,.8);
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+  [data-theme="light"] {
+    --bg: #f3f5f2; --panel: #ffffff; --panel-2: #f7f9f7;
+    --grid: rgba(40,80,120,.06);
+    --text: #1a2330; --muted: #5a6675; --faint: #8a96a4;
+    --border: rgba(30,60,90,.14); --border-strong: rgba(30,60,90,.26);
+    --accent: #1f7fa6; --accent-ink: #ffffff;
+    --heat-from: #2b86c4; --heat-to: #d6802f;
+    --ok: #2f9e63; --ok-bg: rgba(47,158,99,.14);
+    --mid: #b9802a; --mid-bg: rgba(185,128,42,.16);
+    --no: #c8483f; --no-bg: rgba(200,72,63,.12);
+    --shadow: 0 18px 50px -28px rgba(20,40,60,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+    position: relative; min-height: 100vh;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse 120% 90% at 50% 0%, #000 35%, transparent 100%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 0 22px 60px; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 22px;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand .mark {
+    font-family: var(--mono); font-weight: 600; font-size: 16px; letter-spacing: -.02em;
+    color: var(--text);
+  }
+  .brand .mark b { color: var(--accent); font-weight: 600; }
+  .brand .tag {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint);
+  }
+  .spacer { flex: 1; }
+  .chip {
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px;
+    display: flex; align-items: center; gap: 7px; background: var(--panel);
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+  .chip.on .dot { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-bg); }
+  .icon-btn {
+    font-family: var(--mono); font-size: 12px; color: var(--muted); cursor: pointer;
+    border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; background: var(--panel);
+    transition: border-color .15s, color .15s;
+  }
+  .icon-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* Section label */
+  .seclabel { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); display: flex; gap: 8px; align-items: center; }
+  .seclabel .num { color: var(--accent); }
+
+  /* Compose */
+  .compose { display: grid; gap: 14px; animation: rise .5s both; }
+  .field { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 15px; box-shadow: var(--shadow); }
+  .field.q { padding: 12px 15px; }
+  .field label { display: block; margin-bottom: 8px; }
+  .field textarea, .field input {
+    width: 100%; border: 0; outline: 0; resize: vertical; background: transparent;
+    color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.7;
+  }
+  .field textarea { min-height: 150px; }
+  .field.answer textarea { min-height: 110px; }
+  .field input { font-size: 14px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 820px) { .two { grid-template-columns: 1fr; } }
+
+  .bar { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+  .btn {
+    font-family: var(--mono); font-size: 13px; font-weight: 500; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px;
+    padding: 10px 18px; display: inline-flex; align-items: center; gap: 9px;
+    transition: opacity .15s, transform .05s;
+  }
+  .btn:hover { opacity: .9; }
+  .btn:active { transform: translateY(1px); }
+  .btn[disabled] { opacity: .5; cursor: default; }
+  .link { font-family: var(--mono); font-size: 12px; color: var(--muted); cursor: pointer; background: none; border: 0; }
+  .link:hover { color: var(--accent); }
+  .spin { width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+
+  .banner {
+    border: 1px solid var(--border); border-left: 3px solid var(--mid); background: var(--panel);
+    border-radius: 8px; padding: 11px 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 18px;
+    font-family: var(--mono);
+  }
+  .banner code { color: var(--accent); }
+  .banner.err { border-left-color: var(--no); }
+  [hidden] { display: none !important; }
+
+  /* Result */
+  .result { animation: rise .45s both; }
+  .resbar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 14px 20px;
+    padding: 13px 16px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 11px; margin-bottom: 16px; box-shadow: var(--shadow);
+  }
+  .stat { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+  .stat b { color: var(--text); font-weight: 600; }
+  .legend { display: flex; gap: 14px; margin-left: auto; font-family: var(--mono); font-size: 11.5px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; }
+  .swatch.ok { background: var(--ok-bg); border: 1px solid var(--ok); }
+  .swatch.mid { background: var(--mid-bg); border: 1px solid var(--mid); }
+  .swatch.no { background: var(--no-bg); border: 1px solid var(--no); }
+
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .panes { grid-template-columns: 1fr; } }
+  .pane { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .pane > .head { display: flex; align-items: center; justify-content: space-between; padding: 11px 15px; border-bottom: 1px solid var(--border); }
+  .pane .body { padding: 16px 17px; font-family: var(--mono); font-size: 13px; line-height: 1.85; white-space: pre-wrap; word-break: break-word; max-height: 60vh; overflow: auto; }
+  .pane .body.doc { color: var(--text); }
+
+  /* Claim + source marks */
+  mark.claim { background: transparent; color: inherit; cursor: pointer; padding: 1px 0; border-bottom: 2px solid; transition: background .15s; border-radius: 2px; }
+  mark.claim.tier-ok { border-color: var(--ok); }
+  mark.claim.tier-mid { border-color: var(--mid); }
+  mark.claim.tier-no { border-color: var(--no); border-bottom-style: dashed; }
+  mark.claim:hover, mark.claim.active.tier-ok { background: var(--ok-bg); }
+  mark.claim.active.tier-mid { background: var(--mid-bg); }
+  mark.claim.active.tier-no { background: var(--no-bg); }
+  mark.claim.active { color: var(--text); }
+  mark.src {
+    color: var(--text); border-radius: 3px; padding: 1px 1px;
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--heat-from) 38%, transparent), color-mix(in srgb, var(--heat-to) 38%, transparent));
+    box-shadow: inset 0 -2px 0 var(--accent);
+    animation: pop .25s ease;
+  }
+
+  /* Detail strip */
+  .detail { margin-top: 16px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 15px 17px; min-height: 64px; }
+  .detail .empty { color: var(--faint); font-family: var(--mono); font-size: 12.5px; }
+  .detail .claimline { font-family: var(--mono); font-size: 13px; margin-bottom: 10px; }
+  .detail .pill { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; padding: 2px 7px; border-radius: 5px; margin-right: 8px; }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.mid { background: var(--mid-bg); color: var(--mid); } .pill.no { background: var(--no-bg); color: var(--no); }
+  .srcrow { display: flex; gap: 10px; align-items: baseline; padding: 5px 0; border-top: 1px dashed var(--border); font-family: var(--mono); font-size: 12px; }
+  .srcrow .doc { color: var(--accent); white-space: nowrap; }
+  .srcrow .q { color: var(--muted); }
+  .srcrow .w { margin-left: auto; color: var(--faint); white-space: nowrap; }
+  .srcrow.none .q { color: var(--no); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: .3; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="mark">token<b>path</b></span>
+      <span class="tag">attribution playground</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="chip" id="acct"><span class="dot"></span><span id="acctText">checking…</span></div>
+    <button class="icon-btn" id="theme" title="Toggle theme">◐ theme</button>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <!-- Compose -->
+  <section class="compose" id="compose">
+    <div class="field">
+      <label class="seclabel"><span class="num">01</span> source · document</label>
+      <textarea id="document" spellcheck="false"></textarea>
+    </div>
+    <div class="field q">
+      <label class="seclabel"><span class="num">02</span> question · prompt</label>
+      <input id="question" spellcheck="false" />
+    </div>
+    <div class="field answer">
+      <label class="seclabel"><span class="num">03</span> answer · output to attribute</label>
+      <textarea id="answer" spellcheck="false"></textarea>
+    </div>
+    <div class="bar">
+      <button class="btn" id="run"><span id="runLabel">Run attribution</span></button>
+      <button class="link" id="sample">load sample</button>
+      <button class="link" id="clear">clear</button>
+    </div>
+  </section>
+
+  <!-- Result -->
+  <section class="result" id="result" hidden>
+    <div class="resbar">
+      <span class="stat" id="grounded"></span>
+      <span class="stat" id="meta"></span>
+      <button class="link" id="edit">← edit inputs</button>
+      <div class="legend">
+        <span><i class="swatch ok"></i> supported</span>
+        <span><i class="swatch mid"></i> weak</span>
+        <span><i class="swatch no"></i> unsupported</span>
+      </div>
+    </div>
+    <div class="panes">
+      <div class="pane">
+        <div class="head"><span class="seclabel">source</span><span class="seclabel" id="docHint">hover a claim →</span></div>
+        <div class="body doc" id="docView"></div>
+      </div>
+      <div class="pane">
+        <div class="head"><span class="seclabel">answer</span><span class="seclabel">claims</span></div>
+        <div class="body" id="ansView"></div>
+      </div>
+    </div>
+    <div class="detail" id="detail"><div class="empty">Hover or click a claim to see the source span it traces back to.</div></div>
+  </section>
+</div>
+
+<script>
+const SAMPLE = {
+  document:
+    "Acme Corp was founded in 2011 in Berlin. It raised a $40M Series B in 2021. " +
+    "The company has 250 employees and has been profitable since 2023.",
+  question: "Give me a quick overview of Acme Corp.",
+  answer:
+    "Acme Corp, founded in 2011 in Berlin, raised a $40M Series B in 2021. " +
+    "It now employs around 600 people and recently went public.",
+};
+
+const $ = (id) => document.getElementById(id);
+const state = { document: "", answer: "", spans: [], active: null };
+
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+// Render `text` with non-overlapping [start,end) ranges wrapped in marks.
+function renderRanges(text, ranges) {
+  const sorted = ranges
+    .filter((r) => r.end > r.start)
+    .sort((a, b) => a.start - b.start);
+  let html = "";
+  let cursor = 0;
+  for (const r of sorted) {
+    if (r.start < cursor) continue; // skip overlaps
+    if (r.start > cursor) html += escapeHtml(text.slice(cursor, r.start));
+    const attrs = Object.entries(r.data || {}).map(([k, v]) => ` data-${k}="${v}"`).join("");
+    html += `<mark class="${r.cls}"${attrs}>${escapeHtml(text.slice(r.start, r.end))}</mark>`;
+    cursor = r.end;
+  }
+  html += escapeHtml(text.slice(cursor));
+  return html;
+}
+
+function tierOf(span) {
+  if (!span.sources || span.sources.length === 0 || span.support < 0.05) return "no";
+  if (span.support >= 0.5) return "ok";
+  if (span.support >= 0.15) return "mid";
+  return "no";
+}
+
+function renderAnswer() {
+  const ranges = state.spans.map((s, i) => ({
+    start: s.answer_range[0],
+    end: s.answer_range[1],
+    cls: `claim tier-${tierOf(s)}`,
+    data: { idx: i },
+  }));
+  $("ansView").innerHTML = renderRanges(state.answer, ranges);
+}
+
+function renderDocument(activeIdx) {
+  if (activeIdx == null) {
+    $("docView").textContent = state.document;
+    return;
+  }
+  const span = state.spans[activeIdx];
+  const ranges = (span.sources || []).map((src) => ({
+    start: src.start,
+    end: src.end,
+    cls: "src",
+    data: {},
+  }));
+  $("docView").innerHTML = renderRanges(state.document, ranges);
+  const first = $("docView").querySelector("mark.src");
+  if (first) first.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function setActive(idx) {
+  state.active = idx;
+  renderDocument(idx);
+  $("ansView").querySelectorAll("mark.claim").forEach((m) => {
+    m.classList.toggle("active", Number(m.dataset.idx) === idx);
+  });
+  const s = state.spans[idx];
+  const tier = tierOf(s);
+  const label = tier === "ok" ? "supported" : tier === "mid" ? "weak support" : "unsupported";
+  const sources = (s.sources || []).length
+    ? s.sources.map((src) => `
+        <div class="srcrow"><span class="doc">${escapeHtml(src.doc_id)}</span>
+        <span class="q">"${escapeHtml(src.text)}"</span>
+        <span class="w">weight ${src.weight}</span></div>`).join("")
+    : `<div class="srcrow none"><span class="q">traces to nothing in the source — likely fabricated</span></div>`;
+  $("detail").innerHTML = `
+    <div class="claimline"><span class="pill ${tier}">${label}</span>
+    support ${s.support.toFixed(2)} · "${escapeHtml(s.answer_text)}"</div>${sources}`;
+  $("docHint").textContent = sources && s.sources.length ? "source highlighted ↓" : "no source";
+}
+
+async function run() {
+  const document_ = $("document").value;
+  const question = $("question").value;
+  const answer = $("answer").value;
+  if (!document_.trim() || !question.trim() || !answer.trim()) {
+    showBanner("Fill in document, question, and answer first.", true);
+    return;
+  }
+  setRunning(true);
+  hideBanner();
+  try {
+    const res = await fetch("/api/attribute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ document: document_, question, answer }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `request failed (${res.status})`);
+    state.document = document_;
+    state.answer = answer;
+    state.spans = data.spans || [];
+    state.active = null;
+    const grounded = state.spans.filter((s) => tierOf(s) === "ok").length;
+    $("grounded").innerHTML = `grounded <b>${grounded} / ${state.spans.length}</b> claims`;
+    $("meta").innerHTML = `<b>${data.meta?.api_calls ?? 1}</b> API call${(data.meta?.api_calls ?? 1) === 1 ? "" : "s"}${data.meta?.split_across_calls ? " · chunked" : ""}`;
+    renderAnswer();
+    renderDocument(null);
+    $("detail").innerHTML = `<div class="empty">Hover or click a claim to see the source span it traces back to.</div>`;
+    $("docHint").textContent = "hover a claim →";
+    $("compose").hidden = true;
+    $("result").hidden = false;
+  } catch (err) {
+    showBanner(String(err.message || err), true);
+  } finally {
+    setRunning(false);
+  }
+}
+
+function setRunning(on) {
+  $("run").disabled = on;
+  $("runLabel").innerHTML = on ? '<span class="spin"></span> attributing…' : "Run attribution";
+}
+function showBanner(msg, isErr) {
+  const b = $("banner");
+  b.innerHTML = msg;
+  b.classList.toggle("err", !!isErr);
+  b.hidden = false;
+}
+function hideBanner() { $("banner").hidden = true; }
+
+async function loadAccount() {
+  try {
+    const r = await fetch("/api/account");
+    const a = await r.json();
+    if (a.connected) {
+      $("acct").classList.add("on");
+      $("acctText").textContent = `${a.email} · ${Number(a.available_tokens).toLocaleString()} tokens`;
+    } else {
+      $("acctText").textContent = "not connected";
+      showBanner('No API key found. Run <code>/tokenpath:setup</code> in Claude Code, then reload this page.', false);
+    }
+  } catch {
+    $("acctText").textContent = "offline";
+  }
+}
+
+// Wiring
+$("ansView").addEventListener("mouseover", (e) => {
+  const m = e.target.closest("mark.claim");
+  if (m && state.active === null) setActive(Number(m.dataset.idx));
+});
+$("ansView").addEventListener("click", (e) => {
+  const m = e.target.closest("mark.claim");
+  if (m) setActive(Number(m.dataset.idx));
+});
+$("run").addEventListener("click", run);
+$("edit").addEventListener("click", () => { $("result").hidden = true; $("compose").hidden = false; });
+$("sample").addEventListener("click", () => {
+  $("document").value = SAMPLE.document; $("question").value = SAMPLE.question; $("answer").value = SAMPLE.answer;
+});
+$("clear").addEventListener("click", () => { $("document").value = ""; $("question").value = ""; $("answer").value = ""; });
+$("theme").addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("tp-theme", next); } catch {}
+});
+
+// Prefill from the user's latest Claude Code exchange when /tokenpath:playground wrote one.
+async function loadPrefill() {
+  try {
+    const r = await fetch("/api/prefill");
+    const p = await r.json();
+    if (p && (p.document || p.question || p.answer)) {
+      if (p.document != null) $("document").value = p.document;
+      if (p.question != null) $("question").value = p.question;
+      if (p.answer != null) $("answer").value = p.answer;
+      showBanner("Prefilled from your latest Claude Code exchange — click <b>Run attribution</b>, or edit first.", false);
+    }
+  } catch {}
+}
+
+// Init
+(async function init() {
+  try { const t = localStorage.getItem("tp-theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
+  $("document").value = SAMPLE.document; $("question").value = SAMPLE.question; $("answer").value = SAMPLE.answer;
+  await loadPrefill();
+  await loadAccount();
+})();
+</script>
+</body>
+</html>
